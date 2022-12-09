@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 
     PlannerNode *plannerNode = new PlannerNode(nh);
 
-    ros::Rate rate(1);
+    ros::Rate rate(10);
 
     // Spin
    while(ros::ok())

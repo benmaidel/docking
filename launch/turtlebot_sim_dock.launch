@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="gui" default="false"/>
+    <arg name="gui" default="true"/>
     <arg name="dock_x" default="0.09"/>
     <arg name="dock_y" default="0.0"/>
     <!-- <arg name="dock_YAW" default="-1.570796"/> -->

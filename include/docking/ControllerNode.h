@@ -12,8 +12,8 @@ public:
     nh_(nh), tfListener_(tfBuffer_)
   {
 //    nh_ = nh;
-    ROS_INFO_STREAM("INITIALIZING CONTROLLER NODE OBJECT");
-    ROS_INFO_STREAM("STARTING DYNAMIC RECONFIGURE SERVER");
+    ROS_DEBUG_STREAM("INITIALIZING CONTROLLER NODE OBJECT");
+    ROS_DEBUG_STREAM("STARTING DYNAMIC RECONFIGURE SERVER");
     startDynamicReconfigureServer();
     startPub();
     startPlanSub();
@@ -85,12 +85,12 @@ public:
 
     if(perform_detection_.data != config.perform_detection){
       perform_detection_.data = config.perform_detection;
-      ROS_INFO_STREAM("SETTING DETECTION ACTIVATION STATUS TO  " << config.perform_detection);
+      ROS_DEBUG_STREAM("SETTING DETECTION ACTIVATION STATUS TO  " << config.perform_detection);
       detection_status_changed_ = true;
     }
     if(perform_planning_.data != config.perform_planning){
       perform_planning_.data = config.perform_planning;
-      ROS_INFO_STREAM("SETTING PLANNING ACTIVATION STATUS TO  " << config.perform_planning);
+      ROS_DEBUG_STREAM("SETTING PLANNING ACTIVATION STATUS TO  " << config.perform_planning);
       planning_status_changed_ = true;
     }
 
@@ -103,7 +103,7 @@ public:
     if(detection_status_changed_){
       if(perform_detection_.data)
         boolString = "TRUE";
-      ROS_INFO_STREAM("PUBLISHING DETECTION ACTIVATION STATUS AS  " << boolString);
+      ROS_DEBUG_STREAM("PUBLISHING DETECTION ACTIVATION STATUS AS  " << boolString);
       detection_status_changed_ = false;
     }
 
@@ -113,7 +113,7 @@ public:
     if(planning_status_changed_){
       if(perform_detection_.data)
         boolString = "TRUE";
-      ROS_INFO_STREAM("PUBLISHING PLANNING ACTIVATION STATUS AS  " << boolString);
+      ROS_DEBUG_STREAM("PUBLISHING PLANNING ACTIVATION STATUS AS  " << boolString);
 
       planning_status_changed_ = false;
     }
@@ -141,16 +141,16 @@ public:
   }
 
   void initGlobals(){
-    ROS_INFO_STREAM("ControllerNode: Initializing Globals");
-    ROS_INFO_STREAM("Time Step: " << time_step_);
+    ROS_DEBUG_STREAM("ControllerNode: Initializing Globals");
+    ROS_DEBUG_STREAM("Time Step: " << time_step_);
     ros::Duration time_step_duration(time_step_);
     time_step_duration_ = time_step_duration;
-    ROS_INFO_STREAM("Time Step Duration: " << time_step_duration);
+    ROS_DEBUG_STREAM("Time Step Duration: " << time_step_duration);
 //    ros::Rate frequencyRate(frequency_);
 //    frequencyRate_ = frequencyRate;
     zeroTwist_.linear.x = zeroTwist_.angular.z = 0.0;
     within_goal_dist_tolerance_ = within_goal_orientation_tolerance_ = false;
-    ROS_INFO_STREAM("ControllerNode: Initialized Globals");
+    ROS_DEBUG_STREAM("ControllerNode: Initialized Globals");
     detection_status_changed_ = planning_status_changed_ = true;
   }
 
@@ -169,9 +169,9 @@ public:
     geometry_msgs::Twist currentTwist = plan_.twists.at(1); // First is zero twist at starting pose
 
     if(!willOvershoot(plan_)){
-      ROS_INFO_STREAM("CURRENT TWIST VALID");
+      ROS_DEBUG_STREAM("CURRENT TWIST VALID");
       if(publish_twist_){
-        ROS_INFO_STREAM("PUBLISHING CURRENT TWIST");
+        ROS_DEBUG_STREAM("PUBLISHING CURRENT TWIST");
         cmd_vel_pub_.publish(currentTwist);
       }
     } else {
@@ -190,7 +190,7 @@ public:
     geometry_msgs::PoseArray poses = plan.poseArray;
 
 
-    ROS_INFO_STREAM("**************** CHECKING TOLERANCE ****************");
+    ROS_DEBUG_STREAM("**************** CHECKING TOLERANCE ****************");
     tf2::Transform base2ProjectionTF, robotTF, base2TargetTF, base2EntranceTF, proj2TargetTF, deltaTF;
     geometry_msgs::TransformStamped base2ProjectionTFMsg, robotTFMsg, base2TargetTFMsg, base2EntranceTFMsg, proj2TargetTFMsg, deltaTFMsg, tempTFMsg;
     geometry_msgs::PoseStamped base2ProjectionPose, robotPose, base2TargetPose, base2EntrancePose, proj2TargetPose, deltaTFPose, target2EntrancePose;
@@ -203,12 +203,12 @@ public:
 
     deltaTFMsg = base2ProjectionTFMsg;
 //    syncTFData(deltaTFMsg,deltaTF,deltaTFPose);
-    ROS_INFO_STREAM("ORIGINAL TF  " << transformString(base2ProjectionTF));
+    ROS_DEBUG_STREAM("ORIGINAL TF  " << transformString(base2ProjectionTF));
 
     // STEP CURRENT POSE OVER 1 STEP
     deltaTF = getDeltaTF(base2ProjectionTF,twist,time_step_);
     syncTFData(deltaTF,deltaTFMsg,deltaTFPose,robotFrameID,projectionFrameID);
-    ROS_INFO_STREAM("STEPPED TF  " << transformString(deltaTF));
+    ROS_DEBUG_STREAM("STEPPED TF  " << transformString(deltaTF));
 
     base2ProjectionTF = deltaTF;
     syncTFData(base2ProjectionTF,base2ProjectionTFMsg,base2ProjectionPose,robotFrameID,projectionFrameID);
@@ -216,11 +216,11 @@ public:
     // GET TARGET POSE
     base2TargetPose.pose = poses.poses.back();
     syncTFData(base2TargetPose,base2TargetTF,base2TargetTFMsg,targetFrameID);
-    ROS_INFO_STREAM("BASE 2 TARGET TF  " << transformString(base2TargetTF));
+    ROS_DEBUG_STREAM("BASE 2 TARGET TF  " << transformString(base2TargetTF));
 
     double deltaXProjection2Target = base2TargetTF.getOrigin().x() - base2ProjectionTF.getOrigin().x();
 
-    ROS_INFO_STREAM("DELTA X OF CURRENT TWIST PROJECTED & TARGET  " << deltaXProjection2Target);
+    ROS_DEBUG_STREAM("DELTA X OF CURRENT TWIST PROJECTED & TARGET  " << deltaXProjection2Target);
 
     if(deltaXProjection2Target < 0.05){
       return true;
